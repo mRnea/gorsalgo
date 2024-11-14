@@ -53,9 +53,8 @@ void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32
 }
 
 TTF_Font *font;
-// returns success
 bool init() {
-    
+    // returns true for successful initialization
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "SDL could not initialize! SDL Error: %s\n", SDL_GetError());
@@ -118,31 +117,16 @@ void close() {
     SDL_Quit();
 }
 
-// pvertex_t vertices[100] = {0};
-// size_t vertex_count = 0;
-// void addVertex(int x, int y, int r){
-//     vertices[vertex_count].x = x;
-//     vertices[vertex_count].y = y;
-//     vertices[vertex_count].r = r;
-//     vertex_count++;
-// }
-
-// void renderVertices(){
-//     // SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-//     for (size_t i = 0; i < vertex_count; i++){
-//         DrawCircle(gRenderer, vertices[i].x, vertices[i].y, vertices[i].r);
-//     }
-// }
 
 double distance(double x1, double y1, double x2, double y2){
     return sqrt(pow(y2 - y1, 2) + pow(x2 - x1, 2));
 }
 
-size_t checkMouseRegion(pgraph_t* pg, int x, int y){
+size_t select_pgraph(pgraph_t* pg, int mouse_x, int mouse_y){
     // Returns the size of pgraph or
     // if the mouse is in a node returns its index
     for (size_t i = 0; i < pg->size; i++){
-        if (distance(x, y, pg->vertices[i].x, pg->vertices[i].y) < pg->vertices[i].r){
+        if (distance(mouse_x, mouse_y, pg->vertices[i].x, pg->vertices[i].y) < pg->vertices[i].r){
             return i;
         }
     }
@@ -151,7 +135,7 @@ size_t checkMouseRegion(pgraph_t* pg, int x, int y){
 
 pvertex_t* grabbed_vertex;
 pvertex_t* maybeGrabVertex(pgraph_t* pg, int x, int y){
-    int vertex_index = checkMouseRegion(pg, x, y);
+    int vertex_index = select_pgraph(pg, x, y);
     if (vertex_index != pg->size){
         grabbed_vertex = &pg->vertices[vertex_index];
         return grabbed_vertex;
@@ -162,15 +146,12 @@ pvertex_t* maybeGrabVertex(pgraph_t* pg, int x, int y){
     }
 }
 
-void renderEdge(pvertex_t v1, pvertex_t v2){
-    SDL_RenderDrawLine(gRenderer, v1.x, v1.y, v2.x, v2.y);
-}
-
 double pvertex_distance(pvertex_t p1, pvertex_t p2){
     return distance(p1.x, p1.y, p2.x, p2.y);
 }
 
 char pvertex_clash(pvertex_t* vertices, int index){
+    // Returns 1 if i-th vertex collides with any vertices [0, i)
     pvertex_t p1;
     pvertex_t p2 = vertices[index];
     for (int i = 0; i < index; i++){
@@ -211,12 +192,16 @@ void render_pgraph(pgraph_t* pgraph){
     }
 }
 
+void render_edge(pvertex_t v1, pvertex_t v2){
+    SDL_RenderDrawLine(gRenderer, v1.x, v1.y, v2.x, v2.y);
+}
+
 void render_edges(graph_t* graph, pgraph_t* pgraph){
     int dim = graph->size;
     for (int i = 0; i < dim; i++){
         for (int j = i; j < dim; j++){
             if (graph->adj_matrix[i * dim + j] == 1){
-                renderEdge(pgraph->vertices[i], pgraph->vertices[j]);
+                render_edge(pgraph->vertices[i], pgraph->vertices[j]);
             }
         }
     }
