@@ -14,7 +14,7 @@ void printUsage(){
            "e - kenar ekle.\n");
     exit(EXIT_SUCCESS);
 }
-
+// comment line
 enum Modes {
                   FILE_PROVIDED = 1,
                   BUILDER_MODE  = 2
