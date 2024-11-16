@@ -2,35 +2,80 @@
 #include "visualize.h"
 
 char* file_name;
-void parse_args(int argc, char *args[]){
-    char file_provided_flag = 0;
-    for (int i = 0; i < argc; i++){
-        if (strcmp("-load", args[i]) == 0 && i + 1 < argc){
-            file_name = args[++i];
-            file_provided_flag = 1;
+
+void printUsage(){
+    printf("Görsel Algoritma\n"
+           "\n"
+           "-load: İçinde komşuluk matrisi olan dosyayı aç.\n"
+           "./main -load graph.txt\n"
+           "\n"
+           "-builder: Graphı inşa et.\n"
+           "v - köşe ekle.\n"
+           "e - kenar ekle.\n");
+    exit(EXIT_SUCCESS);
+}
+
+enum Modes {
+                  FILE_PROVIDED = 1,
+                  BUILDER_MODE  = 2
+};
+
+char parse_flags;
+char parse_args(int argc, char *args[]){
+    char flags = 0;
+    if (argc == 1){
+        printUsage();
+    }
+    for (int i = 1; i < argc; i++){
+        if (strcmp("-load", args[i]) == 0){
+            if (i + 1 < argc){
+                file_name = args[++i];
+                flags ^= 1;
+            }
+            else {
+                fprintf(stderr, "file not provided\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (strcmp("-builder", args[i]) == 0){
+            flags ^= 2;
+        }
+        else if (strcmp("-help", args[i]) == 0){
+            printUsage();
+        }
+        else {
+            printUsage();
         }
     }
-    if (!file_provided_flag){
-        fprintf(stderr, "file not provided\n");
-        exit(1);
-    }
+    parse_flags = flags;
+}
+
+char parse_status(enum Modes flag){
+    return parse_flags & flag;
 }
 
 int main(int argc, char *args[]) {
     parse_args(argc, args);
     srand(time(NULL));
 
-    graph_t* graph = read_graph(file_name);
-
     if (!init()) {
         printf("Failed to initialize SDL2!\n");
         close();
         return 1;
     }
-    
-    pgraph_t* pgraph = graph_to_pgraph(graph);
+
+    graph_t* graph = NULL;
+    pgraph_t* pgraph = NULL;
+    if (parse_status(FILE_PROVIDED)){
+        graph = read_graph(file_name);
+        pgraph = graph_to_pgraph(graph);
+    }
+    else if (parse_status(BUILDER_MODE)){
+        pgraph = make_empty_pgraph(15, 100);
+    }
 
     bool quit = false;
+    int mouse_x, mouse_y;
 
     SDL_Event e;
 
@@ -48,18 +93,74 @@ int main(int argc, char *args[]) {
                 case SDLK_ESCAPE:
                     quit = true;
                     break;
+                case SDLK_v:
+                    switch (builder_flags & VERTEX_OP){
+                    case CAN_ADD_VERTEX:
+                        SDL_GetMouseState(&mouse_x, &mouse_y);
+                        add_pvertex(pgraph, mouse_x, mouse_y, DEFAULT_RADIUS);
+                        builder_flags = ADD_VERTEX_CONFIRM | MOUSE_RECT;
+                        grabbed_vertex = &pgraph->vertices[pgraph->vertex_count - 1];
+                        break;
+                    case ADD_VERTEX_CONFIRM:
+                        remove_pvertex(pgraph);
+                        builder_flags = CAN_ADD_ANY;
+                        break;
+                    }
+                    break;
+                case SDLK_e:
+                    switch (builder_flags & EDGE_OP){
+                    case CAN_ADD_EDGE:
+                        builder_flags = ADD_EDGE_SELECT1 | MOUSE_RECT; 
+                        break;
+                    case ADD_EDGE_SELECT1:
+                    case ADD_EDGE_SELECT2:
+                        builder_flags = CAN_ADD_ANY;
+                        // remove_pedge(pgraph);
+                        break;
+                    }
+                    break;
+                case SDLK_c:
+                    // printf("vertex count = %d of %d\n", pgraph->vertex_count, pgraph->max_vertex);
+                    print_pgraph(pgraph);
+                    break;
                 default:
                     break;
                 }
             }
             else if (e.type == SDL_MOUSEBUTTONDOWN){
-                maybeGrabVertex(pgraph, e.button.x, e.button.y);
-                if (grabbed_vertex){
-                    printf("vertex (%d, %d)\n", grabbed_vertex->x, grabbed_vertex->y);
+                switch (builder_flags & ADDING_ANY){
+                case ADD_VERTEX_CONFIRM:
+                    builder_flags = CAN_ADD_ANY;
+                    grabbed_vertex = NULL;
+                    break;
+                case ADD_EDGE_SELECT1:
+                    SDL_GetMouseState(&mouse_x, &mouse_y);
+                    maybeGrabVertex(pgraph, mouse_x, mouse_y);
+                    if (grabbed_vertex){
+                        builder_vertices[0] = grabbed_vertex;
+                        grabbed_vertex = NULL;
+                        builder_flags = ADD_EDGE_SELECT2 | MOUSE_RECT;
+                    }
+                    break;
+                case ADD_EDGE_SELECT2:
+                    SDL_GetMouseState(&mouse_x, &mouse_y);
+                    maybeGrabVertex(pgraph, mouse_x, mouse_y);
+                    if (grabbed_vertex){
+                        builder_vertices[1] = grabbed_vertex;
+                        grabbed_vertex = NULL;
+                        add_pedge(pgraph, builder_vertices[0], builder_vertices[1]);
+                        builder_flags = CAN_ADD_ANY;
+                    }
+                    break;
+                default:
+                    maybeGrabVertex(pgraph, e.button.x, e.button.y);
                 }
-                else {
-                    printf("Not in any vertex\n");
-                }
+                // if (grabbed_vertex){
+                //     printf("vertex (%d, %d)\n", grabbed_vertex->x, grabbed_vertex->y);
+                // }
+                // else {
+                //     printf("Not in any vertex\n");
+                // }
             }
             else if (e.type == SDL_MOUSEBUTTONUP){
                 grabbed_vertex = NULL;
@@ -67,17 +168,28 @@ int main(int argc, char *args[]) {
             else if (e.type == SDL_MOUSEMOTION){
                 if (grabbed_vertex){
                     move_pvertex(grabbed_vertex, e.motion.xrel, e.motion.yrel);
-                    // grabbed_vertex->x += e.motion.xrel;
-                    // grabbed_vertex->y += e.motion.yrel;
                 }
             }
         }
-        SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0xFF );
+        set_render_color(gRenderer, BLACK);
         SDL_RenderClear(gRenderer);
 
-        SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-        render_pgraph(pgraph);
-        render_edges(graph, pgraph);
+        set_render_color(gRenderer, WHITE);
+        if (pgraph){
+            render_pgraph(pgraph);
+            render_graph_area(graph_area);
+        }
+
+        if (builder_flags & MOUSE_RECT){
+            SDL_GetMouseState(&mouse_x, &mouse_y);
+            mouseRect.x = mouse_x - mouse_rect_w / 2;
+            mouseRect.y = mouse_y - mouse_rect_w / 2;
+            SDL_RenderFillRect(gRenderer, &mouseRect);
+        }
+        if (builder_flags & ADD_EDGE_SELECT2){
+            SDL_GetMouseState(&mouse_x, &mouse_y);
+            render_psuedo_pedge(builder_vertices[0], mouse_x, mouse_y);
+        }
 
         SDL_RenderPresent( gRenderer );
     }
@@ -87,5 +199,4 @@ int main(int argc, char *args[]) {
     close();
     return 0;
 }
-
 

@@ -13,9 +13,11 @@ graph_t* make_graph(int size, int* arr){
 }
 
 void delete_graph(graph_t** g){
-    free((*g)->adj_matrix);
-    free(*g);
-    *g = NULL;
+    if (NULL != *g){
+        free((*g)->adj_matrix);
+        free(*g);
+        *g = NULL;
+    }
 }
 
 void print_graph(graph_t* g, FILE* stream){

@@ -30,6 +30,7 @@ void close();
 
 void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32_t radius);
 
+extern int DEFAULT_RADIUS;
 typedef struct physical_vertex_t {
     int x;
     int y;
@@ -38,33 +39,90 @@ typedef struct physical_vertex_t {
     SDL_Rect name_rect;
 } pvertex_t;
 
-typedef struct pgraph_t {
-    int size;
+typedef struct physical_edge_t {
+    pvertex_t* v1;
+    pvertex_t* v2;
+} pedge_t;
+
+typedef struct physical_graph_t {
+    int vertex_count;
+    int max_vertex;
     pvertex_t* vertices;
+    int edge_count;
+    int max_edge;
+    pedge_t* edges;
 } pgraph_t;
 
 double distance(double x1, double y1, double x2, double y2);
 double pvertex_distance(pvertex_t p1, pvertex_t p2);
 
-/* extern pvertex_t vertices[100]; */
-/* extern size_t vertex_count; */
-/* void addVertex(int x, int y, int r); */
-/* void renderVertices(); */
-void renderEdge(pvertex_t v1, pvertex_t v2);
-
 extern pvertex_t* grabbed_vertex;
 pvertex_t* maybeGrabVertex(pgraph_t* pg, int x, int y);
-size_t checkMouseRegion(pgraph_t* pg, int x, int y);
-
+size_t select_pgraph(pgraph_t* pg, int x, int y);
 
 pgraph_t* graph_to_pgraph(graph_t* graph);
 char pvertex_clash(pvertex_t* vertices, int index);
-void render_pvertex(pvertex_t vertex);
 
+void render_pvertex(pvertex_t vertex);
+void render_pvertices(pgraph_t* pgraph);
+void render_pedge(pedge_t edge);
+void render_psuedo_pedge(pvertex_t* pv, int x, int y);
+void render_pedges(pgraph_t* pgraph);
 void render_pgraph(pgraph_t* pgraph);
-void render_edges(graph_t* graph, pgraph_t* pgraph);
+// void render_edge(pvertex_t v1, pvertex_t v2);
+// void render_edges(graph_t* graph, pgraph_t* pgraph);
+
+void delete_pvertex_texture(pvertex_t* pv);
 void delete_pgraph(pgraph_t** pg);
 
 void get_text_and_rect(SDL_Renderer *renderer, char *text, TTF_Font *font, pvertex_t* pg);
 void move_pvertex(pvertex_t* p, int x, int y);
+
+enum Color {
+            BLACK,
+            WHITE
+};
+
+void set_render_color(SDL_Renderer* renderer, enum Color color);
+
+// graph_area_t graph_area;
+
+// typedef struct graph_area_t {
+//     SDL2_Point p1;
+// } graph_area_t;
+
+extern int GA_OFFSET;
+extern SDL_Point graph_area[5];
+void render_graph_area(SDL_Point area[5]);
+
+
+// Builder functions
+pgraph_t* make_empty_pgraph(int max_vertex, int max_edge);
+
+void add_pvertex(pgraph_t* pg, int x, int y, int r);
+void remove_pvertex(pgraph_t *pg);
+
+void add_pedge(pgraph_t* pg, pvertex_t* v1, pvertex_t* v2);
+void remove_pedge(pgraph_t* pg);
+
+void print_pgraph(pgraph_t* pg);
+
+extern char builder_flags;
+enum Builder_states {
+                     CAN_ADD_VERTEX     = 1,
+                     ADD_VERTEX_CONFIRM = 2,
+                     VERTEX_OP          = CAN_ADD_VERTEX | ADD_VERTEX_CONFIRM,
+                     CAN_ADD_EDGE       = 4,
+                     ADD_EDGE_SELECT1   = 8,
+                     ADD_EDGE_SELECT2   = 16,
+                     EDGE_OP            = CAN_ADD_EDGE | ADD_EDGE_SELECT1 | ADD_EDGE_SELECT2,
+                     CAN_ADD_ANY        = CAN_ADD_VERTEX | CAN_ADD_EDGE,
+                     ADDING_ANY         = ADD_VERTEX_CONFIRM | ADD_EDGE_SELECT1 | ADD_EDGE_SELECT2,
+                     MOUSE_RECT         = 32,
+};
+
+extern pvertex_t* builder_vertices[2];
+extern SDL_Rect mouseRect;
+extern const int mouse_rect_w;
+extern const int mouse_rect_h;
 #endif

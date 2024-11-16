@@ -9,10 +9,18 @@
 
 const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 720;
+int GA_OFFSET = 15;
+int DEFAULT_RADIUS = 10;
 
 SDL_Window *gWindow = NULL;
 SDL_Surface *gScreenSurface = NULL;
 SDL_Renderer* gRenderer = NULL;
+
+SDL_Point graph_area[5] = {{ GA_OFFSET, GA_OFFSET },
+                           { SCREEN_WIDTH - GA_OFFSET, GA_OFFSET},
+                           { SCREEN_WIDTH - GA_OFFSET, SCREEN_HEIGHT - GA_OFFSET},
+                           { GA_OFFSET, SCREEN_HEIGHT - GA_OFFSET },
+                           { GA_OFFSET, GA_OFFSET }};
 
 void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32_t radius)
 {
@@ -122,28 +130,30 @@ double distance(double x1, double y1, double x2, double y2){
     return sqrt(pow(y2 - y1, 2) + pow(x2 - x1, 2));
 }
 
-size_t select_pgraph(pgraph_t* pg, int mouse_x, int mouse_y){
+size_t select_pvertex(pgraph_t* pg, int mouse_x, int mouse_y){
     // Returns the size of pgraph or
     // if the mouse is in a node returns its index
-    for (size_t i = 0; i < pg->size; i++){
+    for (size_t i = 0; i < pg->vertex_count; i++){
         if (distance(mouse_x, mouse_y, pg->vertices[i].x, pg->vertices[i].y) < pg->vertices[i].r){
             return i;
         }
     }
-    return pg->size;
+    return pg->vertex_count;
 }
 
 pvertex_t* grabbed_vertex;
 pvertex_t* maybeGrabVertex(pgraph_t* pg, int x, int y){
-    int vertex_index = select_pgraph(pg, x, y);
-    if (vertex_index != pg->size){
+    int vertex_index = select_pvertex(pg, x, y);
+    if (NULL == pg){
+        grabbed_vertex = NULL;
+    }
+    else if (vertex_index != pg->vertex_count){
         grabbed_vertex = &pg->vertices[vertex_index];
-        return grabbed_vertex;
     }
     else {
         grabbed_vertex = NULL;
-        return grabbed_vertex;
     }
+    return grabbed_vertex;
 }
 
 double pvertex_distance(pvertex_t p1, pvertex_t p2){
@@ -163,21 +173,54 @@ char pvertex_clash(pvertex_t* vertices, int index){
     return 0;
 }
 
+char number_buffer[16];
+char* int_to_string(int num){
+    sprintf(number_buffer, "%d", num);
+    return &number_buffer[0];
+}
+
 pgraph_t* graph_to_pgraph(graph_t* graph){
-    char number_buffer[16];
     pvertex_t* vertices = (pvertex_t*) calloc(graph->size, sizeof(pvertex_t));
+    char* num_str = NULL;
+    int offset = GA_OFFSET + 10;
     for (int i = 0; i < graph->size; i++){
         do {
-            vertices[i].x = 20 + rand() % (SCREEN_WIDTH - 40);
-            vertices[i].y = 20 + rand() % (SCREEN_HEIGHT - 40);
-            vertices[i].r = 10;
+            vertices[i].x = offset + rand() % (SCREEN_WIDTH - offset * 2);
+            vertices[i].y = offset + rand() % (SCREEN_HEIGHT - offset * 2);
+            vertices[i].r = DEFAULT_RADIUS;
         } while(pvertex_clash(vertices, i));
-        sprintf(number_buffer, "%d", i);
-        get_text_and_rect(gRenderer, number_buffer, font, &vertices[i]);
+        num_str = int_to_string(i);
+        get_text_and_rect(gRenderer, num_str, font, &vertices[i]);
     }
     pgraph_t* pg = (pgraph_t*) calloc(1, sizeof(pgraph_t));
     pg->vertices = vertices;
-    pg->size = graph->size;
+    pg->vertex_count = graph->size;
+    pg->max_vertex = graph->size;
+    
+    int edge_count = 0;
+    int dim = graph->size;
+    for (int i = 0; i < dim; i++){
+        for (int j = i; j < dim; j++){
+            if (graph->adj_matrix[i * dim + j] == 1){
+                edge_count++;
+                // render_edge(pgraph->vertices[i], pgraph->vertices[j]);
+            }
+        }
+    }
+    pedge_t* edges = (pedge_t*) calloc(edge_count, sizeof(pedge_t));
+    int edge_index = 0;
+    for (int i = 0; i < dim; i++){
+        for (int j = i; j < dim; j++){
+            if (graph->adj_matrix[i * dim + j] == 1){
+                edges[edge_index].v1 = &vertices[i];
+                edges[edge_index].v2 = &vertices[j];
+                edge_index++;
+            }
+        }
+    }
+    pg->edge_count = edge_count;
+    pg->max_edge = edge_count;
+    pg->edges = edges;
     return pg;
 }
 
@@ -186,34 +229,54 @@ void render_pvertex(pvertex_t vertex){
     SDL_RenderCopy(gRenderer, vertex.name_texture, NULL, &vertex.name_rect);
 }
 
-void render_pgraph(pgraph_t* pgraph){
-    for (size_t i = 0; i < pgraph->size; i++){
+void render_pvertices(pgraph_t* pgraph){
+    for (size_t i = 0; i < pgraph->vertex_count; i++){
         render_pvertex(pgraph->vertices[i]);
     }
 }
 
-void render_edge(pvertex_t v1, pvertex_t v2){
-    SDL_RenderDrawLine(gRenderer, v1.x, v1.y, v2.x, v2.y);
+void render_pedge(pedge_t edge){
+    SDL_RenderDrawLine(gRenderer, edge.v1->x, edge.v1->y,
+                       edge.v2->x, edge.v2->y);
 }
 
-void render_edges(graph_t* graph, pgraph_t* pgraph){
-    int dim = graph->size;
-    for (int i = 0; i < dim; i++){
-        for (int j = i; j < dim; j++){
-            if (graph->adj_matrix[i * dim + j] == 1){
-                render_edge(pgraph->vertices[i], pgraph->vertices[j]);
-            }
-        }
+void render_psuedo_pedge(pvertex_t* pv, int x, int y){
+    // Psuedo pedge does not have a 2nd vertex.
+    SDL_RenderDrawLine(gRenderer, pv->x, pv->y, x, y);
+}
+
+void render_pedges(pgraph_t* pgraph){
+    for (int i = 0; i < pgraph->edge_count; i++){
+        render_pedge(pgraph->edges[i]);
     }
+}
+
+void render_pgraph(pgraph_t* pgraph){
+    render_pvertices(pgraph);
+    render_pedges(pgraph);
+}
+
+
+void delete_pvertex_texture(pvertex_t* pv){
+    SDL_DestroyTexture(pv->name_texture);
 }
 
 void delete_pgraph(pgraph_t** pg){
-    for (int i = 0; i < (*pg)->size; i++){
-        SDL_DestroyTexture((*pg)->vertices[i].name_texture);
+    pvertex_t* pv;
+    if (NULL != *pg){
+        for (int i = 0; i < (*pg)->vertex_count; i++){
+            // SDL_DestroyTexture((*pg)->vertices[i].name_texture);
+            delete_pvertex_texture((*pg)->vertices + i);
+            // pv = (*pg)->vertices + i;
+            // delete_pvertex(&((*pg)->vertices + i));
+        }
+        free((*pg)->vertices);
+        (*pg)->vertices = NULL;
+        free((*pg)->edges);
+        (*pg)->edges = NULL;
+        free(*pg);
+        *pg = NULL;
     }
-    free((*pg)->vertices);
-    free(*pg);
-    *pg = NULL;
 }
 // double slope = (v1.y - v2.y) / (v1.x - v2.x);
 // double dist = distance(v1.x, v1.y, v2.x, v2.y);
@@ -239,8 +302,99 @@ void get_text_and_rect(SDL_Renderer *renderer, char *text, TTF_Font *font, pvert
 }
 
 void move_pvertex(pvertex_t* p, int x, int y){
-    p->x += x;
-    p->y += y;
-    p->name_rect.x += x;
-    p->name_rect.y += y;
+    // displace pvertex by (x, y)
+    int nx = p->x + x;
+    int ny = p->y + y;
+
+    if (nx > graph_area[0].x && nx < graph_area[1].x &&
+        ny > graph_area[1].y && ny < graph_area[2].y){
+        p->x = nx;
+        p->y = ny;
+        p->name_rect.x += x;
+        p->name_rect.y += y;
+    }
+
 }
+
+void set_render_color(SDL_Renderer* renderer, enum Color color){
+    switch (color){
+    case WHITE:
+        SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+        break;
+    case BLACK:
+    default:
+        SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0xFF );
+    }
+}
+
+void render_graph_area(SDL_Point area[5]){
+    SDL_RenderDrawLines(gRenderer, area, 5);
+}
+
+pgraph_t* make_empty_pgraph(int max_vertex, int max_edge){
+    pgraph_t* pgraph = (pgraph_t*) calloc(1, sizeof(pgraph_t));
+    pgraph->max_vertex = max_vertex;
+    pgraph->vertices = (pvertex_t*) calloc(max_vertex, sizeof(pvertex_t));
+    pgraph->max_edge = max_edge;
+    pgraph->edges = (pedge_t*) calloc(max_edge, sizeof(pedge_t));
+    pgraph->vertex_count = 0;
+    pgraph->edge_count = 0;
+    return pgraph;
+}
+
+void add_pvertex(pgraph_t* pg, int x, int y, int r){
+    char* num_str = NULL;
+    // pvertex_t* new_vertex;
+    if (pg->vertex_count < pg->max_vertex){
+        pg->vertices[pg->vertex_count].x = x;
+        pg->vertices[pg->vertex_count].y = y;
+        pg->vertices[pg->vertex_count].r = r;
+        num_str = int_to_string(pg->vertex_count);
+        // new_vertex = ;
+        get_text_and_rect(gRenderer, num_str, font, &pg->vertices[pg->vertex_count]);
+        pg->vertex_count++;
+    }
+    else {
+        fprintf(stderr, "Cannot add new vertex, max vertex count is (%d)\n", pg->max_vertex);
+    }
+}
+
+void remove_pvertex(pgraph_t *pg){
+    if (pg->vertex_count > 0){
+        delete_pvertex_texture(&pg->vertices[pg->vertex_count]);
+        pg->vertex_count--;
+    }
+}
+
+void add_pedge(pgraph_t* pg, pvertex_t* v1, pvertex_t* v2){
+    int current = pg->edge_count;
+    int max = pg->max_edge;
+    if (current < max){
+        pg->edges[current].v1 = v1;
+        pg->edges[current].v2 = v2;
+        pg->edge_count++;
+    }
+    else {
+        fprintf(stderr, "Cannot add new edge, max edge count is (%d)\n", pg->max_edge);
+    }
+}
+
+void remove_pedge(pgraph_t* pg){
+    pg->edge_count--;
+}
+
+void print_pgraph(pgraph_t* pg){
+    printf("vertices %d/%d\n", pg->vertex_count, pg->max_vertex);
+    for (int i = 0; i < pg->vertex_count; i++){
+        printf("%d : (%d, %d, %d)\n", i, pg->vertices[i].x, pg->vertices[i].y, pg->vertices[i].r);
+    }
+}
+
+char builder_flags = CAN_ADD_ANY;
+pvertex_t* builder_vertices[2];
+
+const int mouse_rect_w = 8;
+const int mouse_rect_h = 8;
+SDL_Rect mouseRect = { 0, 0, 8, 8 };
+
+
