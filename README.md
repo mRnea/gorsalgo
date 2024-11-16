@@ -11,15 +11,15 @@ make
 
 ### load
 
-./main -load graph.txt
+./main -load graph.txt\
 İçinde boyut ve komşuluk matrisi olan dosyayı aç.
 
 
 ### builder
 
-./main -builder
-Çizgeyi programda inşa et.
-v: köşe ekle
+./main -builder\
+Çizgeyi programda inşa et.\
+v: köşe ekle\
 e: kenar ekle
 
 ## Todo
