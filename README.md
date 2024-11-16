@@ -8,10 +8,20 @@ make
 ```
 
 ## Kullanım
-+ -load graph.txt
+
+### load
+
+./main -load graph.txt
 İçinde boyut ve komşuluk matrisi olan dosyayı aç.
 
-+ -builder
+
+### builder
+
+./main -builder
 Çizgeyi programda inşa et.
 v: köşe ekle
 e: kenar ekle
+
+## Todo
++ [ ] Graph coloring algoritmasını ekle.
++ [ ] Multigraph renderla (düz çizgi yerine eğri)
