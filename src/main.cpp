@@ -97,7 +97,7 @@ int main(int argc, char *args[]) {
                     switch (builder_flags & VERTEX_OP){
                     case CAN_ADD_VERTEX:
                         SDL_GetMouseState(&mouse_x, &mouse_y);
-                        add_pvertex(pgraph, mouse_x, mouse_y, DEFAULT_RADIUS);
+                        add_pvertex(pgraph, mouse_x, mouse_y, DEFAULT_RADIUS, -1);
                         builder_flags = ADD_VERTEX_CONFIRM | MOUSE_RECT;
                         grabbed_vertex = &pgraph->vertices[pgraph->vertex_count - 1];
                         break;
@@ -174,7 +174,6 @@ int main(int argc, char *args[]) {
         set_render_color(gRenderer, BLACK);
         SDL_RenderClear(gRenderer);
 
-        set_render_color(gRenderer, WHITE);
         if (pgraph){
             render_pgraph(pgraph);
             render_graph_area(graph_area);

@@ -11,6 +11,7 @@ const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 720;
 int GA_OFFSET = 15;
 int DEFAULT_RADIUS = 10;
+enum Color DEFAULT_COLOR = WHITE;
 
 SDL_Window *gWindow = NULL;
 SDL_Surface *gScreenSurface = NULL;
@@ -58,6 +59,21 @@ void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32
          error += (tx - diameter);
       }
    }
+}
+
+void draw_filled_circle(SDL_Renderer *renderer, int x, int y, int radius){
+    for (int w = 0; w < radius * 2; w++)
+    {
+        for (int h = 0; h < radius * 2; h++)
+        {
+            int dx = radius - w; // horizontal offset
+            int dy = radius - h; // vertical offset
+            if ((dx*dx + dy*dy) <= (radius * radius))
+            {
+                SDL_RenderDrawPoint(renderer, x + dx, y + dy);
+            }
+        }
+    }
 }
 
 TTF_Font *font;
@@ -179,7 +195,7 @@ char* int_to_string(int num){
     return &number_buffer[0];
 }
 
-pgraph_t* graph_to_pgraph(graph_t* graph){
+pgraph_t* graph_to_pgraph(graph_t* graph, int color){
     pvertex_t* vertices = (pvertex_t*) calloc(graph->size, sizeof(pvertex_t));
     char* num_str = NULL;
     int offset = GA_OFFSET + 10;
@@ -188,6 +204,12 @@ pgraph_t* graph_to_pgraph(graph_t* graph){
             vertices[i].x = offset + rand() % (SCREEN_WIDTH - offset * 2);
             vertices[i].y = offset + rand() % (SCREEN_HEIGHT - offset * 2);
             vertices[i].r = DEFAULT_RADIUS;
+            if (color == RANDOM_COLOR){
+                vertices[i].color = random_color();
+            }
+            else {
+                vertices[i].color = (enum Color) color;
+            }
         } while(pvertex_clash(vertices, i));
         num_str = int_to_string(i);
         get_text_and_rect(gRenderer, num_str, font, &vertices[i]);
@@ -225,7 +247,9 @@ pgraph_t* graph_to_pgraph(graph_t* graph){
 }
 
 void render_pvertex(pvertex_t vertex){
-    DrawCircle(gRenderer, vertex.x, vertex.y, vertex.r);
+    set_render_color(gRenderer, vertex.color);
+    // DrawCircle(gRenderer, vertex.x, vertex.y, vertex.r);
+    draw_filled_circle(gRenderer, vertex.x, vertex.y, vertex.r);
     SDL_RenderCopy(gRenderer, vertex.name_texture, NULL, &vertex.name_rect);
 }
 
@@ -246,14 +270,15 @@ void render_psuedo_pedge(pvertex_t* pv, int x, int y){
 }
 
 void render_pedges(pgraph_t* pgraph){
+    set_render_color(gRenderer, WHITE);
     for (int i = 0; i < pgraph->edge_count; i++){
         render_pedge(pgraph->edges[i]);
     }
 }
 
 void render_pgraph(pgraph_t* pgraph){
-    render_pvertices(pgraph);
     render_pedges(pgraph);
+    render_pvertices(pgraph);
 }
 
 
@@ -321,13 +346,28 @@ void set_render_color(SDL_Renderer* renderer, enum Color color){
     case WHITE:
         SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
         break;
+    case RED:
+        SDL_SetRenderDrawColor( gRenderer, 0xFF, 0, 0, 0xFF );
+        break;
+    case GREEN:
+        SDL_SetRenderDrawColor( gRenderer, 0, 0xFF, 0, 0xFF );
+        break;
+    case BLUE:
+        SDL_SetRenderDrawColor( gRenderer, 0, 0, 0xFF, 0xFF );
+        break;
     case BLACK:
     default:
         SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0xFF );
     }
 }
 
+const int RANDOM_COLOR = -1;
+enum Color random_color(){
+    return (enum Color) (1 + rand() % (COLOR_COUNT - 1));
+}
+
 void render_graph_area(SDL_Point area[5]){
+    set_render_color(gRenderer, WHITE);
     SDL_RenderDrawLines(gRenderer, area, 5);
 }
 
@@ -342,13 +382,20 @@ pgraph_t* make_empty_pgraph(int max_vertex, int max_edge){
     return pgraph;
 }
 
-void add_pvertex(pgraph_t* pg, int x, int y, int r){
+void add_pvertex(pgraph_t* pg, int x, int y, int r, int color){
     char* num_str = NULL;
     // pvertex_t* new_vertex;
     if (pg->vertex_count < pg->max_vertex){
         pg->vertices[pg->vertex_count].x = x;
         pg->vertices[pg->vertex_count].y = y;
         pg->vertices[pg->vertex_count].r = r;
+        // pg->vertices[pg->vertex_count].color = color;
+        if (color == RANDOM_COLOR){
+            pg->vertices[pg->vertex_count].color = random_color();
+        }
+        else {
+            pg->vertices[pg->vertex_count].color = (enum Color) color;
+        }
         num_str = int_to_string(pg->vertex_count);
         // new_vertex = ;
         get_text_and_rect(gRenderer, num_str, font, &pg->vertices[pg->vertex_count]);

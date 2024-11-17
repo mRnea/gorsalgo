@@ -28,6 +28,20 @@ bool init();
 // Frees media and shuts down SDL
 void close();
 
+enum Color {
+            BLACK,
+            WHITE,
+            RED,
+            GREEN,
+            BLUE,
+            COLOR_COUNT
+};
+
+extern enum Color DEFAULT_COLOR;
+extern const int RANDOM_COLOR;
+void set_render_color(SDL_Renderer* renderer, enum Color color);
+enum Color random_color();
+
 void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32_t radius);
 
 extern int DEFAULT_RADIUS;
@@ -37,6 +51,7 @@ typedef struct physical_vertex_t {
     int r;
     SDL_Texture* name_texture;
     SDL_Rect name_rect;
+    enum Color color;
 } pvertex_t;
 
 typedef struct physical_edge_t {
@@ -78,13 +93,6 @@ void delete_pgraph(pgraph_t** pg);
 void get_text_and_rect(SDL_Renderer *renderer, char *text, TTF_Font *font, pvertex_t* pg);
 void move_pvertex(pvertex_t* p, int x, int y);
 
-enum Color {
-            BLACK,
-            WHITE
-};
-
-void set_render_color(SDL_Renderer* renderer, enum Color color);
-
 // graph_area_t graph_area;
 
 // typedef struct graph_area_t {
@@ -99,7 +107,7 @@ void render_graph_area(SDL_Point area[5]);
 // Builder functions
 pgraph_t* make_empty_pgraph(int max_vertex, int max_edge);
 
-void add_pvertex(pgraph_t* pg, int x, int y, int r);
+void add_pvertex(pgraph_t* pg, int x, int y, int r, int color);
 void remove_pvertex(pgraph_t *pg);
 
 void add_pedge(pgraph_t* pg, pvertex_t* v1, pvertex_t* v2);
