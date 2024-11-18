@@ -75,7 +75,7 @@ extern pvertex_t* grabbed_vertex;
 pvertex_t* maybeGrabVertex(pgraph_t* pg, int x, int y);
 size_t select_pgraph(pgraph_t* pg, int x, int y);
 
-pgraph_t* graph_to_pgraph(graph_t* graph);
+pgraph_t* graph_to_pgraph(graph_t* graph, int color);
 char pvertex_clash(pvertex_t* vertices, int index);
 
 void render_pvertex(pvertex_t vertex);
