@@ -60,6 +60,9 @@ typedef struct application_data_t {
     int mouse_y;
     graph_t* graph;
     pgraph_t* pgraph;
+    pvertex_t* gv; // grabbed vertex
+    hist_t* hist;
+    int hist_index;
 } app_t;
 
 void handle_event(SDL_Event* e, app_t* app){
@@ -80,7 +83,7 @@ void handle_event(SDL_Event* e, app_t* app){
                 SDL_GetMouseState(&app->mouse_x, &app->mouse_y);
                 add_pvertex(app->pgraph, app->mouse_x, app->mouse_y, DEFAULT_RADIUS, RANDOM_COLOR);
                 builder_flags = ADD_VERTEX_CONFIRM | MOUSE_RECT;
-                grabbed_vertex = &app->pgraph->vertices[app->pgraph->vertex_count - 1];
+                app->gv = &app->pgraph->vertices[app->pgraph->vertex_count - 1];
                 break;
             case ADD_VERTEX_CONFIRM:
                 remove_pvertex(app->pgraph);
@@ -101,7 +104,17 @@ void handle_event(SDL_Event* e, app_t* app){
             }
             break;
         case SDLK_c:
-            // printf("vertex count = %d of %d\n", pgraph->vertex_count, pgraph->max_vertex);
+            SDL_GetMouseState(&app->mouse_x, &app->mouse_y);
+            app->gv = maybeGrabVertex(app->pgraph, app->mouse_x, app->mouse_y);
+            if (app->gv){
+                set_pvertex_color(app->gv, next_color(app->gv->color), app->hist);
+                app->gv = NULL;
+            }
+            break;
+        case SDLK_u:
+            set_pvertex_color_undo(app->hist);
+            break;
+        case SDLK_x:
             print_pgraph(app->pgraph);
             break;
         default:
@@ -112,37 +125,37 @@ void handle_event(SDL_Event* e, app_t* app){
         switch (builder_flags & ADDING_ANY){
         case ADD_VERTEX_CONFIRM:
             builder_flags = CAN_ADD_ANY;
-            grabbed_vertex = NULL;
+            app->gv = NULL;
             break;
         case ADD_EDGE_SELECT1:
             SDL_GetMouseState(&app->mouse_x, &app->mouse_y);
-            maybeGrabVertex(app->pgraph, app->mouse_x, app->mouse_y);
-            if (grabbed_vertex){
-                builder_vertices[0] = grabbed_vertex;
-                grabbed_vertex = NULL;
+            app->gv = maybeGrabVertex(app->pgraph, app->mouse_x, app->mouse_y);
+            if (app->gv){
+                builder_vertices[0] = app->gv;
+                app->gv = NULL;
                 builder_flags = ADD_EDGE_SELECT2 | MOUSE_RECT;
             }
             break;
         case ADD_EDGE_SELECT2:
             SDL_GetMouseState(&app->mouse_x, &app->mouse_y);
-            maybeGrabVertex(app->pgraph, app->mouse_x, app->mouse_y);
-            if (grabbed_vertex){
-                builder_vertices[1] = grabbed_vertex;
-                grabbed_vertex = NULL;
+            app->gv = maybeGrabVertex(app->pgraph, app->mouse_x, app->mouse_y);
+            if (app->gv){
+                builder_vertices[1] = app->gv;
+                app->gv = NULL;
                 add_pedge(app->pgraph, builder_vertices[0], builder_vertices[1]);
                 builder_flags = CAN_ADD_ANY;
             }
             break;
         default:
-            maybeGrabVertex(app->pgraph, e->button.x, e->button.y);
+            app->gv = maybeGrabVertex(app->pgraph, e->button.x, e->button.y);
         }
     }
     else if (e->type == SDL_MOUSEBUTTONUP){
-        grabbed_vertex = NULL;
+        app->gv = NULL;
     }
     else if (e->type == SDL_MOUSEMOTION){
-        if (grabbed_vertex){
-            move_pvertex(grabbed_vertex, e->motion.xrel, e->motion.yrel);
+        if (app->gv){
+            move_pvertex(app->gv, e->motion.xrel, e->motion.yrel);
         }
     }
 }
@@ -182,6 +195,9 @@ int main(int argc, char *args[]) {
         return 1;
     }
 
+    hist_t hist;
+    app.hist = &hist;
+    
     if (parse_status(FILE_PROVIDED)){
         app.graph = read_graph(file_name);
         app.pgraph = graph_to_pgraph(app.graph, RANDOM_COLOR);

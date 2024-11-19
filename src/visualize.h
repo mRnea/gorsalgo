@@ -41,6 +41,7 @@ extern enum Color DEFAULT_COLOR;
 extern const int RANDOM_COLOR;
 void set_render_color(SDL_Renderer* renderer, enum Color color);
 enum Color random_color();
+enum Color next_color(int i);
 
 void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32_t radius);
 
@@ -53,6 +54,15 @@ typedef struct physical_vertex_t {
     SDL_Rect name_rect;
     enum Color color;
 } pvertex_t;
+
+typedef struct color_history_t {
+    pvertex_t* pvertex;
+    enum Color from;
+    enum Color to;
+} hist_t;
+
+void set_pvertex_color(pvertex_t* pvertex, enum Color new_color, hist_t* hist);
+void set_pvertex_color_undo(hist_t* hist);
 
 typedef struct physical_edge_t {
     pvertex_t* v1;

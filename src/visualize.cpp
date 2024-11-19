@@ -366,6 +366,29 @@ enum Color random_color(){
     return (enum Color) (1 + rand() % (COLOR_COUNT - 1));
 }
 
+enum Color next_color(int i){
+    return (enum Color) (i % (COLOR_COUNT - 1) + 1);
+}
+
+void set_pvertex_color(pvertex_t* pv, enum Color new_color, hist_t* hist){
+    // pvertex_t* pv = &pgraph->vertices[index];
+    if (hist){
+        hist->pvertex = pv;
+        // hist->pgraph = pgraph;
+        // hist->vertex_index = index;
+        hist->from = pv->color;
+        hist->to = new_color;
+    }
+
+    pv->color = new_color;
+}
+
+void set_pvertex_color_undo(hist_t* hist){
+    if (hist){
+        hist->pvertex->color = hist->from;
+    }
+}
+
 void render_graph_area(SDL_Point area[5]){
     set_render_color(gRenderer, WHITE);
     SDL_RenderDrawLines(gRenderer, area, 5);
