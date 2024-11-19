@@ -50,10 +50,25 @@ typedef struct physical_vertex_t {
     int x;
     int y;
     int r;
+    int i;
     SDL_Texture* name_texture;
     SDL_Rect name_rect;
     enum Color color;
 } pvertex_t;
+
+typedef struct physical_edge_t {
+    pvertex_t* v1;
+    pvertex_t* v2;
+} pedge_t;
+
+typedef struct physical_graph_t {
+    int vertex_count;
+    int max_vertex;
+    pvertex_t* vertices;
+    int edge_count;
+    int max_edge;
+    pedge_t* edges;
+} pgraph_t;
 
 typedef struct color_change_t {
     pvertex_t* pvertex;
@@ -76,19 +91,7 @@ void set_change(color_change_t* action, pvertex_t* pv, enum Color new_color);
 void set_pvertex_color(pvertex_t* pvertex, enum Color new_color, hist_t* hist);
 void set_pvertex_color_undo(hist_t* hist);
 
-typedef struct physical_edge_t {
-    pvertex_t* v1;
-    pvertex_t* v2;
-} pedge_t;
 
-typedef struct physical_graph_t {
-    int vertex_count;
-    int max_vertex;
-    pvertex_t* vertices;
-    int edge_count;
-    int max_edge;
-    pedge_t* edges;
-} pgraph_t;
 
 double distance(double x1, double y1, double x2, double y2);
 double pvertex_distance(pvertex_t p1, pvertex_t p2);
@@ -98,6 +101,8 @@ pvertex_t* maybeGrabVertex(pgraph_t* pg, int x, int y);
 size_t select_pgraph(pgraph_t* pg, int x, int y);
 
 pgraph_t* graph_to_pgraph(graph_t* graph, int color);
+graph_t* pgraph_to_graph(pgraph_t* pgraph);
+void save_graph(graph_t* graph, char* file_name);
 char pvertex_clash(pvertex_t* vertices, int index);
 
 void render_pvertex(pvertex_t vertex);

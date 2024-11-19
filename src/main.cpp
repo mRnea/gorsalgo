@@ -117,6 +117,18 @@ void handle_event(SDL_Event* e, app_t* app){
         case SDLK_x:
             print_pgraph(app->pgraph);
             break;
+        case SDLK_g:
+            delete_graph(&app->graph);
+            app->graph = pgraph_to_graph(app->pgraph);
+            if (app->graph){
+                print_graph(app->graph, stdout);
+            } else {
+                fprintf(stderr, "Graph could not be converted.\n");
+            }
+            break;
+        // case SDLK_s:
+        //     delete_graph(&app->graph);
+        //     break;
         default:
             break;
         }
@@ -205,6 +217,7 @@ int main(int argc, char *args[]) {
     }
     else if (parse_status(BUILDER_MODE)){
         app.pgraph = make_empty_pgraph(15, 100);
+        app.graph = NULL;
     }
 
     SDL_Event e;

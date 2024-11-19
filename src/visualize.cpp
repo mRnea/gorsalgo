@@ -211,6 +211,7 @@ pgraph_t* graph_to_pgraph(graph_t* graph, int color){
                 vertices[i].color = (enum Color) color;
             }
         } while(pvertex_clash(vertices, i));
+        vertices[i].i = i;
         num_str = int_to_string(i);
         get_text_and_rect(gRenderer, num_str, font, &vertices[i]);
     }
@@ -244,6 +245,31 @@ pgraph_t* graph_to_pgraph(graph_t* graph, int color){
     pg->max_edge = edge_count;
     pg->edges = edges;
     return pg;
+}
+
+graph_t* pgraph_to_graph(pgraph_t* pgraph){
+    int dim = pgraph->vertex_count;
+    int* arr = (int*) calloc(dim * dim, sizeof(int));
+    graph_t* graph = make_graph(dim, arr);
+
+    for (int i = 0; i < pgraph->edge_count; i++){
+        pedge_t* edge = &pgraph->edges[i];
+        arr[edge->v1->i * dim + edge->v2->i] = 1;
+        arr[edge->v2->i * dim + edge->v1->i] = 1;
+    }
+        // (graph_t*) calloc(1, sizeof(graph_t));
+    
+    return graph;
+}
+
+void save_graph(graph_t* graph, char* file_name){
+    FILE* f = fopen(file_name, "w");
+    if (f){
+        print_graph(graph, f);
+        fclose(f);
+    } else {
+        fprintf(stderr, "graph could not be saved to %s\n", file_name);
+    }
 }
 
 void render_pvertex(pvertex_t vertex){
@@ -427,6 +453,7 @@ pvertex_t* add_pvertex(pgraph_t* pg, int x, int y, int r, int color){
         pg->vertices[pg->vertex_count].x = x;
         pg->vertices[pg->vertex_count].y = y;
         pg->vertices[pg->vertex_count].r = r;
+        pg->vertices[pg->vertex_count].i = pg->vertex_count;
         // pg->vertices[pg->vertex_count].color = color;
         if (color == RANDOM_COLOR){
             pg->vertices[pg->vertex_count].color = random_color();
