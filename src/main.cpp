@@ -62,7 +62,6 @@ typedef struct application_data_t {
     pgraph_t* pgraph;
     pvertex_t* gv; // grabbed vertex
     hist_t* hist;
-    int hist_index;
 } app_t;
 
 void handle_event(SDL_Event* e, app_t* app){
@@ -81,9 +80,10 @@ void handle_event(SDL_Event* e, app_t* app){
             switch (builder_flags & VERTEX_OP){
             case CAN_ADD_VERTEX:
                 SDL_GetMouseState(&app->mouse_x, &app->mouse_y);
-                add_pvertex(app->pgraph, app->mouse_x, app->mouse_y, DEFAULT_RADIUS, RANDOM_COLOR);
-                builder_flags = ADD_VERTEX_CONFIRM | MOUSE_RECT;
-                app->gv = &app->pgraph->vertices[app->pgraph->vertex_count - 1];
+                app->gv = add_pvertex(app->pgraph, app->mouse_x, app->mouse_y, DEFAULT_RADIUS, RANDOM_COLOR);
+                if (app->gv){
+                    builder_flags = ADD_VERTEX_CONFIRM | MOUSE_RECT;
+                }
                 break;
             case ADD_VERTEX_CONFIRM:
                 remove_pvertex(app->pgraph);
@@ -195,7 +195,8 @@ int main(int argc, char *args[]) {
         return 1;
     }
 
-    hist_t hist;
+    int hist_size = 10;
+    hist_t hist = { .actions = (color_change_t*) calloc(hist_size, sizeof(color_change_t)), .i = 0, .max_hist = hist_size };
     app.hist = &hist;
     
     if (parse_status(FILE_PROVIDED)){
@@ -218,6 +219,7 @@ int main(int argc, char *args[]) {
         
     }
     // Free resources and close SDL
+    free(hist.actions);
     delete_pgraph(&app.pgraph);
     delete_graph(&app.graph);
     close();

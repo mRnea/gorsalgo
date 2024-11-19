@@ -372,21 +372,36 @@ enum Color next_color(int i){
 
 void set_pvertex_color(pvertex_t* pv, enum Color new_color, hist_t* hist){
     // pvertex_t* pv = &pgraph->vertices[index];
-    if (hist){
-        hist->pvertex = pv;
-        // hist->pgraph = pgraph;
-        // hist->vertex_index = index;
-        hist->from = pv->color;
-        hist->to = new_color;
+    if (hist && hist->i < hist->max_hist){
+        set_change(&hist->actions[hist->i], pv, new_color);
+        hist->i++;
+        do_change(last_change(hist));
     }
-
-    pv->color = new_color;
 }
 
 void set_pvertex_color_undo(hist_t* hist){
-    if (hist){
-        hist->pvertex->color = hist->from;
+    if (hist && hist->i > 0){
+        undo_change(last_change(hist));
+        hist->i--;
     }
+}
+
+void set_change(color_change_t* action, pvertex_t* pv, enum Color new_color){
+    action->pvertex = pv;
+    action->from = pv->color;
+    action->to = new_color;
+}
+
+void do_change(color_change_t* action){
+    action->pvertex->color = action->to;
+}
+
+void undo_change(color_change_t* action){
+    action->pvertex->color = action->from;
+}
+
+color_change_t* last_change(hist_t* hist){
+    return &hist->actions[hist->i - 1];
 }
 
 void render_graph_area(SDL_Point area[5]){
@@ -405,7 +420,7 @@ pgraph_t* make_empty_pgraph(int max_vertex, int max_edge){
     return pgraph;
 }
 
-void add_pvertex(pgraph_t* pg, int x, int y, int r, int color){
+pvertex_t* add_pvertex(pgraph_t* pg, int x, int y, int r, int color){
     char* num_str = NULL;
     // pvertex_t* new_vertex;
     if (pg->vertex_count < pg->max_vertex){
@@ -423,9 +438,11 @@ void add_pvertex(pgraph_t* pg, int x, int y, int r, int color){
         // new_vertex = ;
         get_text_and_rect(gRenderer, num_str, font, &pg->vertices[pg->vertex_count]);
         pg->vertex_count++;
+        return &pg->vertices[pg->vertex_count - 1];
     }
     else {
         fprintf(stderr, "Cannot add new vertex, max vertex count is (%d)\n", pg->max_vertex);
+        return NULL;
     }
 }
 

@@ -55,11 +55,23 @@ typedef struct physical_vertex_t {
     enum Color color;
 } pvertex_t;
 
-typedef struct color_history_t {
+typedef struct color_change_t {
     pvertex_t* pvertex;
     enum Color from;
     enum Color to;
+} color_change_t;
+
+typedef struct color_history_t {
+    color_change_t* actions;
+    int i;
+    int max_hist;
 } hist_t;
+
+color_change_t* last_change(hist_t* hist);
+void load_change(color_change_t* action);
+void do_change(color_change_t* action);
+void undo_change(color_change_t* action);
+void set_change(color_change_t* action, pvertex_t* pv, enum Color new_color);
 
 void set_pvertex_color(pvertex_t* pvertex, enum Color new_color, hist_t* hist);
 void set_pvertex_color_undo(hist_t* hist);
@@ -117,7 +129,7 @@ void render_graph_area(SDL_Point area[5]);
 // Builder functions
 pgraph_t* make_empty_pgraph(int max_vertex, int max_edge);
 
-void add_pvertex(pgraph_t* pg, int x, int y, int r, int color);
+pvertex_t* add_pvertex(pgraph_t* pg, int x, int y, int r, int color);
 void remove_pvertex(pgraph_t *pg);
 
 void add_pedge(pgraph_t* pg, pvertex_t* v1, pvertex_t* v2);
