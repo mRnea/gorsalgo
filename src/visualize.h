@@ -103,6 +103,10 @@ size_t select_pgraph(pgraph_t* pg, int x, int y);
 pgraph_t* graph_to_pgraph(graph_t* graph, int color);
 graph_t* pgraph_to_graph(pgraph_t* pgraph);
 void save_graph(graph_t* graph, char* file_name);
+void load_pgraph_coord(pgraph_t* pg, char* file_name);
+void print_pgraph_coord(pgraph_t* pg, FILE* stream);
+void save_pgraph_coord(pgraph_t* pg, char* file_name);
+
 char pvertex_clash(pvertex_t* vertices, int index);
 
 void render_pvertex(pvertex_t vertex);

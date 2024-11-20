@@ -1,7 +1,9 @@
 #include "graph.h"
 #include "visualize.h"
+#include <ctime>
 
 char* file_name;
+char coord_file[] = "resource/coord.txt";
 
 void printUsage(){
     printf("Görsel Algoritma\n"
@@ -127,6 +129,10 @@ void handle_event(SDL_Event* e, app_t* app){
                 fprintf(stderr, "Graph could not be converted.\n");
             }
             break;
+        case SDLK_k:
+            save_pgraph_coord(app->pgraph, coord_file);
+        case SDLK_l:
+            load_pgraph_coord(app->pgraph, coord_file);
         // case SDLK_s:
         //     delete_graph(&app->graph);
         //     break;

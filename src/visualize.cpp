@@ -338,18 +338,18 @@ void delete_pgraph(pgraph_t** pg){
 - x, y: upper left corner.
 - texture, rect: outputs.
 */
-void get_text_and_rect(SDL_Renderer *renderer, char *text, TTF_Font *font, pvertex_t* pg) {
+void get_text_and_rect(SDL_Renderer *renderer, char *text, TTF_Font *font, pvertex_t* pv) {
     SDL_Surface *surface;
     SDL_Color textColor = {255, 255, 255, 0};
 
     surface = TTF_RenderText_Solid(font, text, textColor);
-    pg->name_texture = SDL_CreateTextureFromSurface(renderer, surface);
-    pg->name_rect.w = surface->w;
-    pg->name_rect.h = surface->h;
+    pv->name_texture = SDL_CreateTextureFromSurface(renderer, surface);
+    pv->name_rect.w = surface->w;
+    pv->name_rect.h = surface->h;
     SDL_FreeSurface(surface);
 
-    pg->name_rect.x = pg->x - pg->name_rect.w / 2;
-    pg->name_rect.y = pg->y - pg->r - pg->name_rect.h - 5 ;
+    pv->name_rect.x = pv->x - pv->name_rect.w / 2;
+    pv->name_rect.y = pv->y - pv->r - pv->name_rect.h - 5;
 }
 
 void move_pvertex(pvertex_t* p, int x, int y){
@@ -511,4 +511,46 @@ const int mouse_rect_w = 8;
 const int mouse_rect_h = 8;
 SDL_Rect mouseRect = { 0, 0, 8, 8 };
 
+void load_pgraph_coord(pgraph_t* pg, char* file_name){
+    FILE* f = fopen(file_name, "r");
+    if (!f){
+        fprintf(stderr, "file \"%s\" could not be opened", file_name);
+        return;
+    }
+    read_eof = 0;
+    int_obj x, y;
+    int i = 0;
+    pvertex_t* pv = NULL;
+    while (!read_eof && i < pg->vertex_count){
+        pv = &pg->vertices[i];
+        x = read_int(f);
+        y = read_int(f);
+        if (y.length > 0 && x.length > 0){
+            pv->x = x.value;
+            pv->y = y.value;
+            pv->name_rect.x = pv->x - pv->name_rect.w / 2;
+            pv->name_rect.y = pv->y - pv->r - pv->name_rect.h - 5;
+        }
 
+        i++;
+    }
+    fclose(f);
+}
+
+void print_pgraph_coord(pgraph_t* pg, FILE* stream){
+    pvertex_t* pv = NULL;
+    for (int i = 0; i < pg->vertex_count; i++){
+        pv = &pg->vertices[i];
+        fprintf(stream, "%d %d\n", pv->x, pv->y);
+    }
+}
+
+void save_pgraph_coord(pgraph_t* pg, char* file_name){
+    FILE* f = fopen(file_name, "w");
+    if (!f){
+        fprintf(stderr, "file \"%s\" could not be opened", file_name);
+        return;
+    }
+    print_pgraph_coord(pg, f);
+    fclose(f);
+}
