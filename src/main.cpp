@@ -48,6 +48,7 @@ char parse_args(int argc, char *args[]){
         }
     }
     parse_flags = flags;
+    return parse_flags;
 }
 
 char parse_status(enum Modes flag){

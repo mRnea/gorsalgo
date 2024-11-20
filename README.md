@@ -3,7 +3,7 @@
 
 ## Kurulum
 ```bash
-apt install libsdl2-dev
+apt install libsdl2-dev libsdl2-ttf-dev
 make
 ```
 

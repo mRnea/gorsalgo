@@ -3,7 +3,7 @@ OBJS = src/graph.cpp src/visualize.cpp src/main.cpp
 CC = g++
 
 # -w suppresses all warnings
-COMPILER_FLAGS = -w
+# COMPILER_FLAGS = -w
 
 LINKER_FLAGS = -lSDL2 -lSDL2_ttf
 
