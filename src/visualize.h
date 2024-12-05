@@ -13,6 +13,7 @@
 #include <random>
 #include <math.h>
 #include "graph.h"
+#include "color.h"
 
 #ifndef VISUALIZE_HEADER
 #define VISUALIZE_HEADER
@@ -36,20 +37,7 @@ bool init();
 // Frees media and shuts down SDL
 void close();
 
-enum Color {
-            BLACK,
-            WHITE,
-            RED,
-            GREEN,
-            BLUE,
-            COLOR_COUNT
-};
-
-extern enum Color DEFAULT_COLOR;
-extern const int RANDOM_COLOR;
 void set_render_color(SDL_Renderer* renderer, enum Color color);
-enum Color random_color();
-enum Color next_color(int i);
 
 void DrawCircle(SDL_Renderer * renderer, int32_t centreX, int32_t centreY, int32_t radius);
 

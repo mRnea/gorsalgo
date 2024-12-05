@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include "color.h"
 
 // Contains an implementation of graph data structure as an adjacency matrix
 
@@ -10,6 +11,7 @@
 typedef struct graph_t {
     int size;
     int* adj_matrix;
+    enum Color* colors;
 } graph_t;
 
 graph_t* make_graph(int size, int* arr);

@@ -1,4 +1,4 @@
-OBJS = src/graph.cpp src/visualize.cpp src/main.cpp
+OBJS = src/color.cpp src/graph.cpp src/visualize.cpp src/main.cpp
 
 CC = g++
 

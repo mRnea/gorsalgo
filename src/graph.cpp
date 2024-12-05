@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "graph.h"
+#include "color.h"
 
 char read_eof = 0;
 
@@ -9,12 +10,14 @@ graph_t* make_graph(int size, int* arr){
     graph_t* g = (graph_t*) calloc(1, sizeof(graph_t));
     g->size = size;
     g->adj_matrix = arr;
+    g->colors = (enum Color*) calloc(size, sizeof(enum Color));
     return g;
 }
 
 void delete_graph(graph_t** g){
     if (NULL != *g){
         free((*g)->adj_matrix);
+        free((*g)->colors);
         free(*g);
         *g = NULL;
     }

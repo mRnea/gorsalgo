@@ -19,7 +19,6 @@ const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 720;
 int GA_OFFSET = 15;
 int DEFAULT_RADIUS = 10;
-enum Color DEFAULT_COLOR = WHITE;
 
 SDL_Window *gWindow = NULL;
 SDL_Surface *gScreenSurface = NULL;
@@ -94,7 +93,7 @@ bool init() {
     }
 
     // Create window
-    gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED,
+    gWindow = SDL_CreateWindow("Graph Coloring", SDL_WINDOWPOS_UNDEFINED,
                                SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
                                SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (gWindow == NULL) {
@@ -393,15 +392,6 @@ void set_render_color(SDL_Renderer* renderer, enum Color color){
     default:
         SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0xFF );
     }
-}
-
-const int RANDOM_COLOR = -1;
-enum Color random_color(){
-    return (enum Color) (1 + rand() % (COLOR_COUNT - 1));
-}
-
-enum Color next_color(int i){
-    return (enum Color) (i % (COLOR_COUNT - 1) + 1);
 }
 
 void set_pvertex_color(pvertex_t* pv, enum Color new_color, hist_t* hist){
