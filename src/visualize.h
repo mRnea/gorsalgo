@@ -78,6 +78,17 @@ typedef struct color_history_t {
     int max_hist;
 } hist_t;
 
+typedef struct application_data_t {
+    bool quit;
+    int mouse_x;
+    int mouse_y;
+    graph_t* graph;
+    pgraph_t* pgraph;
+    pvertex_t* gv; // grabbed vertex
+    hist_t* hist;
+} app_t;
+
+
 color_change_t* last_change(hist_t* hist);
 void load_change(color_change_t* action);
 void do_change(color_change_t* action);

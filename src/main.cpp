@@ -1,5 +1,6 @@
 #include "graph.h"
 #include "visualize.h"
+#include "../algorithms/backtracking.h"
 #include <ctime>
 
 char* file_name;
@@ -29,7 +30,7 @@ char parse_args(int argc, char *args[]){
         printUsage();
     }
     for (int i = 1; i < argc; i++){
-        if (strcmp("-load", args[i]) == 0){
+        if (strcmp("-load", args[i]) == 0 || strcmp("-l", args[i]) == 0){
             if (i + 1 < argc){
                 file_name = args[++i];
                 flags ^= 1;
@@ -39,7 +40,7 @@ char parse_args(int argc, char *args[]){
                 exit(EXIT_FAILURE);
             }
         }
-        else if (strcmp("-builder", args[i]) == 0){
+        else if (strcmp("-builder", args[i]) == 0 || strcmp("-b", args[i]) == 0){
             flags ^= 2;
         }
         else if (strcmp("-help", args[i]) == 0){
@@ -56,16 +57,6 @@ char parse_args(int argc, char *args[]){
 char parse_status(enum Modes flag){
     return parse_flags & flag;
 }
-
-typedef struct application_data_t {
-    bool quit;
-    int mouse_x;
-    int mouse_y;
-    graph_t* graph;
-    pgraph_t* pgraph;
-    pvertex_t* gv; // grabbed vertex
-    hist_t* hist;
-} app_t;
 
 void handle_event(SDL_Event* e, app_t* app){
     // User requests quit
@@ -131,8 +122,19 @@ void handle_event(SDL_Event* e, app_t* app){
             break;
         case SDLK_k:
             save_pgraph_coord(app->pgraph, coord_file);
+            break;  
         case SDLK_l:
             load_pgraph_coord(app->pgraph, coord_file);
+            break;
+        case SDLK_s:
+            color_backtrack(app);
+            break;
+        case SDLK_p:
+            for (int i = 0; i < app->graph->size; i++){
+              printf("%d ", app->graph->colors[i]);
+            }
+            printf("\n");
+            break;
         // case SDLK_s:
         //     delete_graph(&app->graph);
         //     break;
@@ -220,7 +222,7 @@ int main(int argc, char *args[]) {
     
     if (parse_status(FILE_PROVIDED)){
         app.graph = read_graph(file_name);
-        app.pgraph = graph_to_pgraph(app.graph, RANDOM_COLOR);
+        app.pgraph = graph_to_pgraph(app.graph, WHITE);
     }
     else if (parse_status(BUILDER_MODE)){
         app.pgraph = make_empty_pgraph(15, 100);

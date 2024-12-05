@@ -11,3 +11,7 @@ enum Color random_color(){
 enum Color next_color(int i){
     return (enum Color) (i % (COLOR_COUNT - 1) + 1);
 }
+
+enum Color next_color_no_loop(int i){
+    return (enum Color) (i + 1);
+}
