@@ -20,7 +20,7 @@ make
 ### load
 
 ```bash
-./main -load graph.txt\
+./main -load graph.txt
 ```
 İçinde boyut ve komşuluk matrisi olan dosyayı aç.
 
@@ -28,7 +28,7 @@ make
 ### builder
 
 ```bash
-./main -builder\
+./main -builder
 ```
 Çizgeyi programda inşa et.\
 v: köşe ekle\
