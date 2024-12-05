@@ -1,7 +1,15 @@
+#ifdef __linux__ 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#endif
+
+#ifdef _WIN64
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#endif
+
 #include <stdio.h>
-#include <string>
+#include <string.h>
 #include <random>
 #include <math.h>
 #include "graph.h"
