@@ -14,7 +14,7 @@ extern enum Color DEFAULT_COLOR;
 extern const int RANDOM_COLOR;
 
 enum Color random_color();
+enum Color next_color_wrap(int i);
 enum Color next_color(int i);
-enum Color next_color_no_loop(int i);
 
 #endif

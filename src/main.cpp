@@ -1,6 +1,6 @@
 #include "graph.h"
 #include "visualize.h"
-#include "../algorithms/backtracking.h"
+#include "../algorithms/coloring.h"
 #include <ctime>
 
 char* file_name;
@@ -101,15 +101,9 @@ void handle_event(SDL_Event* e, app_t* app){
             SDL_GetMouseState(&app->mouse_x, &app->mouse_y);
             app->gv = maybeGrabVertex(app->pgraph, app->mouse_x, app->mouse_y);
             if (app->gv){
-                set_pvertex_color(app->gv, next_color(app->gv->color), app->hist);
+                set_pvertex_color(app->gv, next_color_wrap(app->gv->color), app->hist);
                 app->gv = NULL;
             }
-            break;
-        case SDLK_u:
-            set_pvertex_color_undo(app->hist);
-            break;
-        case SDLK_x:
-            print_pgraph(app->pgraph);
             break;
         case SDLK_g:
             delete_graph(&app->graph);

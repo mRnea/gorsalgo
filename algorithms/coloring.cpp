@@ -1,4 +1,4 @@
-#include "backtracking.h"
+#include "coloring.h"
 
 void set_vertex_color(app_t* app, int i, enum Color color){
   app->graph->colors[i] = color;
@@ -19,7 +19,7 @@ bool can_color(graph_t* g, int index, enum Color color){
 void backtracking(app_t* app, int i){
   printf("i : %d\n", i);
   graph_t* g = app->graph;
-  for (enum Color color = WHITE; color < COLOR_COUNT; color = next_color_no_loop(color)){
+  for (enum Color color = WHITE; color < COLOR_COUNT; color = next_color(color)){
     if (can_color(g, i, color)){
       set_vertex_color(app, i, color);
       if (i + 1 < g->size){
