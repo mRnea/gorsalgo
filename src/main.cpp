@@ -123,6 +123,9 @@ void handle_event(SDL_Event* e, app_t* app){
         case SDLK_s:
             color_backtrack(app);
             break;
+        case SDLK_x:
+            printf("%d colors\n", color_greedy(app));
+            break;
         case SDLK_p:
             for (int i = 0; i < app->graph->size; i++){
               printf("%d ", app->graph->colors[i]);
