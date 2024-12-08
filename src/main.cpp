@@ -75,7 +75,7 @@ void handle_event(SDL_Event* e, app_t* app){
             switch (builder_flags & VERTEX_OP){
             case CAN_ADD_VERTEX:
                 SDL_GetMouseState(&app->mouse_x, &app->mouse_y);
-                app->gv = add_pvertex(app->pgraph, app->mouse_x, app->mouse_y, DEFAULT_RADIUS, RANDOM_COLOR);
+                app->gv = add_pvertex(app->pgraph, app->mouse_x, app->mouse_y, DEFAULT_RADIUS, WHITE);
                 if (app->gv){
                     builder_flags = ADD_VERTEX_CONFIRM | MOUSE_RECT;
                 }
