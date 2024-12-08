@@ -203,6 +203,9 @@ char* int_to_string(int num){
 }
 
 pgraph_t* graph_to_pgraph(graph_t* graph, int color){
+    if (!graph){
+        fprintf(stderr, "NULL graph could not be converted to pgraph.\n");
+    }
     pvertex_t* vertices = (pvertex_t*) calloc(graph->size, sizeof(pvertex_t));
     char* num_str = NULL;
     int offset = GA_OFFSET + 10;

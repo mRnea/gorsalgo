@@ -230,7 +230,7 @@ int main(int argc, char *args[]) {
         app.pgraph = graph_to_pgraph(app.graph, WHITE);
     }
     else if (parse_status(BUILDER_MODE)){
-        app.pgraph = make_empty_pgraph(15, 100);
+        app.pgraph = make_empty_pgraph(25, 300);
         app.graph = NULL;
     }
 
