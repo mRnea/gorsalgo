@@ -66,16 +66,19 @@ typedef struct physical_graph_t {
     pedge_t* edges;
 } pgraph_t;
 
-typedef struct color_change_t {
-    pvertex_t* pvertex;
+typedef struct history_slice_t {
+    int vi;
+    int i;
     enum Color from;
     enum Color to;
-} color_change_t;
+    history_slice_t* prev;
+    history_slice_t* next;
+} hist_slice_t;
 
 typedef struct color_history_t {
-    color_change_t* actions;
-    int i;
-    int max_hist;
+    hist_slice_t* head;
+    hist_slice_t* tail;
+    hist_slice_t* current;
 } hist_t;
 
 typedef struct application_data_t {
@@ -88,15 +91,13 @@ typedef struct application_data_t {
     hist_t* hist;
 } app_t;
 
-
-color_change_t* last_change(hist_t* hist);
-void load_change(color_change_t* action);
-void do_change(color_change_t* action);
-void undo_change(color_change_t* action);
-void set_change(color_change_t* action, pvertex_t* pv, enum Color new_color);
-
-void set_pvertex_color(pvertex_t* pvertex, enum Color new_color, hist_t* hist);
-void set_pvertex_color_undo(hist_t* hist);
+void add_slice(hist_t* hist, int i, enum Color from, enum Color to);
+void color_vertex(app_t* app, int i, enum Color color);
+void delete_hist(hist_t** hist);
+void new_hist(app_t* app);
+void render_next_slice(app_t* app);
+void render_prev_slice(app_t* app);
+void print_history(app_t* app);
 
 
 

@@ -59,6 +59,7 @@ char parse_status(enum Modes flag){
 }
 
 void handle_event(SDL_Event* e, app_t* app){
+    int user_max_color;
     // User requests quit
     if (e->type == SDL_QUIT) {
         app->quit = true;
@@ -97,14 +98,6 @@ void handle_event(SDL_Event* e, app_t* app){
                 break;
             }
             break;
-        case SDLK_c:
-            SDL_GetMouseState(&app->mouse_x, &app->mouse_y);
-            app->gv = maybeGrabVertex(app->pgraph, app->mouse_x, app->mouse_y);
-            if (app->gv){
-                set_pvertex_color(app->gv, next_color_wrap(app->gv->color), app->hist);
-                app->gv = NULL;
-            }
-            break;
         case SDLK_g:
             delete_graph(&app->graph);
             app->graph = pgraph_to_graph(app->pgraph);
@@ -121,9 +114,13 @@ void handle_event(SDL_Event* e, app_t* app){
             load_pgraph_coord(app->pgraph, coord_file);
             break;
         case SDLK_s:
-            color_backtrack(app);
+            printf("Enter max color: ");
+            scanf("%d", &user_max_color);
+            color_backtrack(app, user_max_color);
             break;
         case SDLK_x:
+            // printf("Enter max color: ");
+            // scanf("%d", &user_max_color);
             printf("%d colors\n", color_greedy(app));
             break;
         case SDLK_p:
@@ -132,9 +129,18 @@ void handle_event(SDL_Event* e, app_t* app){
             }
             printf("\n");
             break;
-        // case SDLK_s:
-        //     delete_graph(&app->graph);
-        //     break;
+        case SDLK_a:
+            render_prev_slice(app);
+            break;
+        case SDLK_d:
+            render_next_slice(app);
+            break;
+        case SDLK_w:
+            print_history(app);
+            break;
+        case SDLK_o:
+            print_pgraph(app->pgraph);
+            break;
         default:
             break;
         }
@@ -203,6 +209,12 @@ void render_app(SDL_Renderer* renderer, app_t* app){
 
 app_t app = { .quit = false, .graph = NULL, .pgraph = NULL };
 
+void delete_app(app_t* app){
+    delete_hist(&app->hist);
+    delete_pgraph(&app->pgraph);
+    delete_graph(&app->graph);
+}
+
 int main(int argc, char *args[]) {
     parse_args(argc, args);
     srand(time(NULL));
@@ -212,10 +224,6 @@ int main(int argc, char *args[]) {
         close();
         return 1;
     }
-
-    int hist_size = 10;
-    hist_t hist = { .actions = (color_change_t*) calloc(hist_size, sizeof(color_change_t)), .i = 0, .max_hist = hist_size };
-    app.hist = &hist;
     
     if (parse_status(FILE_PROVIDED)){
         app.graph = read_graph(file_name);
@@ -238,9 +246,7 @@ int main(int argc, char *args[]) {
         
     }
     // Free resources and close SDL
-    free(hist.actions);
-    delete_pgraph(&app.pgraph);
-    delete_graph(&app.graph);
+    delete_app(&app);
     close();
     return 0;
 }

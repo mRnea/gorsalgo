@@ -406,39 +406,97 @@ void set_render_color(SDL_Renderer* renderer, enum Color color){
     }
 }
 
-void set_pvertex_color(pvertex_t* pv, enum Color new_color, hist_t* hist){
-    // pvertex_t* pv = &pgraph->vertices[index];
-    if (hist && hist->i < hist->max_hist){
-        set_change(&hist->actions[hist->i], pv, new_color);
-        hist->i++;
-        do_change(last_change(hist));
+void color_vertex(app_t* app, int i, enum Color color){
+    app->graph->colors[i] = color;
+    app->pgraph->vertices[i].color = color;
+}
+
+
+void delete_hist(hist_t** hist){
+    if (*hist){
+        hist_slice_t* curr = (*hist)->head;
+        hist_slice_t* prev;
+        while (curr){
+            prev = curr;
+            curr = curr->next;
+            delete(prev);
+        }
+        delete(*hist);
+    }
+    (*hist) = NULL;
+}
+
+void new_hist(app_t* app){
+    app->hist = (hist_t*) calloc(1, sizeof(hist_t));
+    hist_t* h = app->hist;
+    h->head = (hist_slice_t*) calloc(1, sizeof(hist_slice_t));
+    h->tail = (hist_slice_t*) calloc(1, sizeof(hist_slice_t));
+    h->current = h->head;
+    h->head->prev = NULL;
+    h->head->next = h->tail;
+    h->head->i = 0;
+    h->tail->next = NULL;
+    h->tail->prev = h->head;
+    h->tail->i = 1;
+}
+
+void add_slice(hist_t* hist, int vi, enum Color from, enum Color to){
+    hist_slice_t* slice = (hist_slice_t*) calloc(1, sizeof(hist_slice_t));
+    slice->from = from;
+    slice->to = to;
+    slice->vi = vi;
+
+    slice->i = hist->tail->i;
+    hist->tail->i++;
+
+    slice->prev = hist->tail->prev;
+    slice->next = hist->tail;
+
+    hist->tail->prev->next = slice;
+    hist->tail->prev = slice;
+}
+
+bool is_history_boundary(hist_slice_t* s){
+    return s->next == NULL || s->prev == NULL;
+}
+
+void render_next_slice(app_t* app){
+    hist_t* hist = app->hist;
+    if (hist){
+        hist_slice_t* curr = hist->current;
+        if (curr->next && !is_history_boundary(curr->next)){
+            hist->current = curr->next;
+            curr = hist->current;
+            color_vertex(app, curr->vi, curr->to);        
+        }
     }
 }
 
-void set_pvertex_color_undo(hist_t* hist){
-    if (hist && hist->i > 0){
-        undo_change(last_change(hist));
-        hist->i--;
+void render_prev_slice(app_t* app){
+    hist_t* hist = app->hist;
+    if (hist){
+        hist_slice_t* curr = hist->current;
+        if (!is_history_boundary(curr)){
+            color_vertex(app, curr->vi, curr->from);
+            hist->current = curr->prev;
+            curr = hist->current;
+        }
     }
 }
 
-void set_change(color_change_t* action, pvertex_t* pv, enum Color new_color){
-    action->pvertex = pv;
-    action->from = pv->color;
-    action->to = new_color;
+void print_history(app_t* app){
+    if (app->hist){
+        hist_slice_t* curr = app->hist->head->next;
+        while (curr->next){
+            printf("%d : %d -> %d\n", curr->i, curr->from, curr->to);
+            curr = curr->next;
+        }
+    }
+    else {
+        printf("No app hist\n");
+    }
 }
 
-void do_change(color_change_t* action){
-    action->pvertex->color = action->to;
-}
-
-void undo_change(color_change_t* action){
-    action->pvertex->color = action->from;
-}
-
-color_change_t* last_change(hist_t* hist){
-    return &hist->actions[hist->i - 1];
-}
 
 void render_graph_area(SDL_Point area[5]){
     set_render_color(gRenderer, WHITE);
