@@ -7,6 +7,10 @@ enum Color {
             RED,
             GREEN,
             BLUE,
+            PURPLE,
+            YELLOW,
+            ORANGE,
+            MAGENTA,
             COLOR_COUNT
 };
 

@@ -388,6 +388,18 @@ void set_render_color(SDL_Renderer* renderer, enum Color color){
     case BLUE:
         SDL_SetRenderDrawColor( gRenderer, 0, 0, 0xFF, 0xFF );
         break;
+    case PURPLE:
+        SDL_SetRenderDrawColor( gRenderer, 128, 0, 128, 0xFF );
+        break;
+    case YELLOW:
+        SDL_SetRenderDrawColor( gRenderer, 255, 255, 0, 0xFF );
+        break;
+    case ORANGE:
+        SDL_SetRenderDrawColor( gRenderer, 255, 165, 0, 0xFF );
+        break;
+    case MAGENTA:
+        SDL_SetRenderDrawColor( gRenderer, 255, 0, 255, 0xFF );
+        break;
     case BLACK:
     default:
         SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0xFF );
