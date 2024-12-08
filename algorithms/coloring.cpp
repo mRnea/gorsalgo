@@ -68,7 +68,7 @@ int greedy(app_t* app){
             }
         }
     }
-    return max ;
+    return max - 1;
 }
 
 int color_greedy(app_t* app){
