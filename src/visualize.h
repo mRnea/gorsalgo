@@ -89,6 +89,8 @@ typedef struct application_data_t {
     pgraph_t* pgraph;
     pvertex_t* gv; // grabbed vertex
     hist_t* hist;
+    SDL_Texture* iter_texture;
+    SDL_Rect iter_rect;
 } app_t;
 
 void add_slice(hist_t* hist, int i, enum Color from, enum Color to);
@@ -98,8 +100,7 @@ void new_hist(app_t* app);
 void render_next_slice(app_t* app);
 void render_prev_slice(app_t* app);
 void print_history(app_t* app);
-
-
+void set_app_iter_texture(app_t* app, SDL_Renderer* renderer,TTF_Font* font);
 
 double distance(double x1, double y1, double x2, double y2);
 double pvertex_distance(pvertex_t p1, pvertex_t p2);

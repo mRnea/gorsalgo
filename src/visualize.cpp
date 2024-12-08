@@ -470,7 +470,8 @@ void render_next_slice(app_t* app){
         if (curr->next && !is_history_boundary(curr->next)){
             hist->current = curr->next;
             curr = hist->current;
-            color_vertex(app, curr->vi, curr->to);        
+            color_vertex(app, curr->vi, curr->to);
+            set_app_iter_texture(app, gRenderer, font);
         }
     }
 }
@@ -483,6 +484,7 @@ void render_prev_slice(app_t* app){
             color_vertex(app, curr->vi, curr->from);
             hist->current = curr->prev;
             curr = hist->current;
+            set_app_iter_texture(app, gRenderer, font);
         }
     }
 }
@@ -498,6 +500,26 @@ void print_history(app_t* app){
     else {
         printf("No app hist\n");
     }
+}
+
+void set_app_iter_texture(app_t* app, SDL_Renderer* renderer,TTF_Font* font){
+    if (app->iter_texture){
+        SDL_DestroyTexture(app->iter_texture);        
+        app->iter_texture = NULL;
+    }
+    SDL_Surface *surface;
+    SDL_Color textColor = {255, 255, 255, 0};
+
+    char text[30]; 
+    snprintf(text, 30, "%d/%d", app->hist->current->i, app->hist->tail->i - 1);
+    surface = TTF_RenderText_Solid(font, text, textColor);
+    app->iter_texture = SDL_CreateTextureFromSurface(renderer, surface);
+    app->iter_rect.w = surface->w;
+    app->iter_rect.h = surface->h;
+    SDL_FreeSurface(surface);
+
+    app->iter_rect.x = 20;
+    app->iter_rect.y = 20;
 }
 
 

@@ -203,6 +203,9 @@ void render_app(SDL_Renderer* renderer, app_t* app){
         SDL_GetMouseState(&app->mouse_x, &app->mouse_y);
         render_psuedo_pedge(builder_vertices[0], app->mouse_x, app->mouse_y);
     }
+    if (app->iter_texture){
+        SDL_RenderCopy(renderer, app->iter_texture, NULL, &app->iter_rect); 
+    }
 
     SDL_RenderPresent(renderer);
 }
