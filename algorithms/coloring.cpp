@@ -43,12 +43,16 @@ void backtracking(app_t* app, int i){
 }
 
 void color_backtrack(app_t* app, int max){
-    colors_init(app);
-    delete_hist(&app->hist);
-    new_hist(app);
-    current_algorithm = BACKTRACK;
-    max_color = max > 0 && max + 2 <= COLOR_COUNT ? max + 2 : COLOR_COUNT;
-    backtracking(app, 0);
+    if (app->graph){
+        colors_init(app);
+        delete_hist(&app->hist);
+        new_hist(app);
+        current_algorithm = BACKTRACK;
+        max_color = max > 0 && max + 2 <= COLOR_COUNT ? max + 2 : COLOR_COUNT;
+        backtracking(app, 0);
+    } else {
+        printf("Empty graph can't be solved.\n");
+    }
 }
 
 
@@ -72,10 +76,15 @@ int greedy(app_t* app){
 }
 
 int color_greedy(app_t* app){
-    colors_init(app);
-    delete_hist(&app->hist);
-    new_hist(app);
-    current_algorithm = GREEDY;
-    // max_color = max > 0 ? max : COLOR_COUNT;
-    return greedy(app);
+    if (app->graph){
+        colors_init(app);
+        delete_hist(&app->hist);
+        new_hist(app);
+        current_algorithm = GREEDY;
+        // max_color = max > 0 ? max : COLOR_COUNT;
+        return greedy(app);
+    } else {
+        printf("Empty graph can't be solved.\n");
+        return 0;
+    }
 }
