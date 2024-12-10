@@ -362,6 +362,17 @@ void get_text_and_rect(SDL_Renderer *renderer, char *text, TTF_Font *font, pvert
     pv->name_rect.y = pv->y - pv->r - pv->name_rect.h - 5;
 }
 
+void pvertex_radius_adjust(pvertex_t* pv, int r){
+    pv->r += r;
+    pv->name_rect.y = pv->y - pv->r - pv->name_rect.h - 5;
+}
+
+void pgraph_radius_adjust(pgraph_t* pg, int r){
+    for (int i = 0; i < pg->vertex_count; i++){
+        pvertex_radius_adjust(&pg->vertices[i], r);
+    }
+}
+
 void move_pvertex(pvertex_t* p, int x, int y){
     // displace pvertex by (x, y)
     int nx = p->x + x;

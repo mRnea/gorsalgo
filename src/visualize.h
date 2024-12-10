@@ -131,6 +131,8 @@ void delete_pvertex_texture(pvertex_t* pv);
 void delete_pgraph(pgraph_t** pg);
 
 void get_text_and_rect(SDL_Renderer *renderer, char *text, TTF_Font *font, pvertex_t* pg);
+void pvertex_radius_adjust(pvertex_t* pv, int r);
+void pgraph_radius_adjust(pgraph_t* pg, int r);
 void move_pvertex(pvertex_t* p, int x, int y);
 
 // graph_area_t graph_area;

@@ -141,6 +141,13 @@ void handle_event(SDL_Event* e, app_t* app){
         case SDLK_o:
             print_pgraph(app->pgraph);
             break;
+        case SDLK_r:
+            if (e->key.keysym.mod == KMOD_LSHIFT){
+                pgraph_radius_adjust(app->pgraph, -1);
+            } else {
+                pgraph_radius_adjust(app->pgraph, 1);
+            }
+            break;
         default:
             break;
         }
