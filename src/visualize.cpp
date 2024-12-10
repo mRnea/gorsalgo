@@ -478,7 +478,7 @@ void new_hist(app_t* app){
     h->tail->i = 1;
 }
 
-void add_slice(hist_t* hist, int vi, enum Color from, enum Color to){
+void add_slice(hist_t* hist, int vi, enum Color from, enum Color to, int sol){
     hist_slice_t* slice = (hist_slice_t*) calloc(1, sizeof(hist_slice_t));
     slice->from = from;
     slice->to = to;
@@ -492,13 +492,15 @@ void add_slice(hist_t* hist, int vi, enum Color from, enum Color to){
 
     hist->tail->prev->next = slice;
     hist->tail->prev = slice;
+
+    slice->is_solution = sol;
 }
 
 bool is_history_boundary(hist_slice_t* s){
     return s->next == NULL || s->prev == NULL;
 }
 
-void render_next_slice(app_t* app){
+int go_next_slice(app_t* app){
     hist_t* hist = app->hist;
     if (hist){
         hist_slice_t* curr = hist->current;
@@ -507,11 +509,13 @@ void render_next_slice(app_t* app){
             curr = hist->current;
             color_vertex(app, curr->vi, curr->to);
             set_app_iter_texture(app, gRenderer, font);
+            return 1;
         }
     }
+    return 0;
 }
 
-void render_prev_slice(app_t* app){
+int go_prev_slice(app_t* app){
     hist_t* hist = app->hist;
     if (hist){
         hist_slice_t* curr = hist->current;
@@ -520,6 +524,40 @@ void render_prev_slice(app_t* app){
             hist->current = curr->prev;
             curr = hist->current;
             set_app_iter_texture(app, gRenderer, font);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void go_next_solution(app_t* app){
+    int moved = go_next_slice(app);
+    hist_t* hist = app->hist;
+    hist_slice_t* curr;
+    while (moved && (curr = hist->current) && !curr->is_solution){
+        moved = go_next_slice(app);
+    }    
+}
+
+void go_prev_solution(app_t* app){
+    int moved = go_prev_slice(app);
+    hist_t* hist = app->hist;
+    hist_slice_t* curr;
+    while (moved && (curr = hist->current) && !curr->is_solution){
+        moved = go_prev_slice(app);
+    }    
+}
+
+void find_max_solution(app_t* app){
+    if (app->hist){
+        hist_t* hist = app->hist;
+        hist_slice_t* curr = hist->tail;
+        while (curr && !curr->is_solution){
+            curr = curr->prev;
+        }
+        if (curr){
+            printf("max_sol = %d\n", curr->is_solution);
+            app->hist->max_sol = curr->is_solution;
         }
     }
 }
@@ -545,8 +583,16 @@ void set_app_iter_texture(app_t* app, SDL_Renderer* renderer,TTF_Font* font){
     SDL_Surface *surface;
     SDL_Color textColor = {255, 255, 255, 0};
 
-    char text[30]; 
-    snprintf(text, 30, "%d/%d", app->hist->current->i, app->hist->tail->i - 1);
+    char text[80];
+    hist_t* h = app->hist;
+    if (h){
+        if (h->current->is_solution){
+            snprintf(text, 60, "%d/%d [%d of %d]", h->current->i, h->tail->i - 1, h->current->is_solution, h->max_sol);
+        } else {
+            snprintf(text, 60, "%d/%d", h->current->i, h->tail->i - 1);
+        }
+    }
+
     surface = TTF_RenderText_Solid(font, text, textColor);
     app->iter_texture = SDL_CreateTextureFromSurface(renderer, surface);
     app->iter_rect.w = surface->w;

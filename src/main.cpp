@@ -23,7 +23,9 @@ void printUsage(){
            "r - köşe yarıçapını arttır.\n"
            "R - köşe yarıçapını azalt.\n"
            "a - history geri.\n"
-           "d - history ileri.\n");
+           "d - history ileri.\n"
+           "A - history önceki çözüm.\n"
+           "D - history sonraki çözüm.\n");
     exit(EXIT_SUCCESS);
 }
 // comment line
@@ -143,10 +145,18 @@ void handle_event(SDL_Event* e, app_t* app){
             printf("\n");
             break;
         case SDLK_a:
-            render_prev_slice(app);
+            if (e->key.keysym.mod == KMOD_LSHIFT){
+                go_prev_solution(app);
+            } else {
+                go_prev_slice(app);
+            }
             break;
         case SDLK_d:
-            render_next_slice(app);
+            if (e->key.keysym.mod == KMOD_LSHIFT){
+                go_next_solution(app);
+            } else {
+                go_next_slice(app);
+            }
             break;
         case SDLK_w:
             print_history(app);

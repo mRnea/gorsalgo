@@ -30,21 +30,23 @@ make
 ```bash
 ./main -builder
 ```
-Çizgeyi programda inşa et.\
+Çizgeyi programda inşa et.
 
-v: köşe ekle\
-e: kenar ekle\
-v: köşe ekle.\
-e: kenar ekle.\
-g: pgraph -> graph.\
-k: koordinatları kaydet.\
-s: backtracking solve.\
-x: greedy solve.\
-r: köşe yarıçapını arttır.\
-R: köşe yarıçapını azalt.\
-a: history geri.\
-d: history ileri.\
++ v: köşe ekle\
++ e: kenar ekle\
++ v: köşe ekle.\
++ e: kenar ekle.\
++ g: pgraph -> graph.\
++ k: koordinatları kaydet.\
++ s: backtracking solve.\
++ x: greedy solve.\
++ r: köşe yarıçapını arttır.\
++ R: köşe yarıçapını azalt.\
++ a: history geri.\
++ d: history ileri.\
++ A: history önceki çözüm.\
++ D: history sonraki çözüm.
 
 ## Todo
-+ [+] Graph coloring algoritmasını ekle.
++ [x] Graph coloring algoritmasını ekle.
 + [ ] Multigraph renderla (düz çizgi yerine eğri)

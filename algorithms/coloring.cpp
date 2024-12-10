@@ -2,9 +2,14 @@
 
 enum color_algos current_algorithm;
 int max_color;
+int sol_counter;
 
 void set_vertex_color(app_t* app, int i, enum Color color){
-    add_slice(app->hist, i, app->graph->colors[i], color);
+    if (i + 1 == app->graph->size && color != WHITE){
+        add_slice(app->hist, i, app->graph->colors[i], color, ++sol_counter);
+    } else {
+        add_slice(app->hist, i, app->graph->colors[i], color, 0);
+    }
     app->graph->colors[i] = color;
 }
 
@@ -49,7 +54,9 @@ void color_backtrack(app_t* app, int max){
         new_hist(app);
         current_algorithm = BACKTRACK;
         max_color = max > 0 && max + 2 <= COLOR_COUNT ? max + 2 : COLOR_COUNT;
+        sol_counter = 0;
         backtracking(app, 0);
+        find_max_solution(app);
     } else {
         printf("Empty graph can't be solved.\n");
     }
@@ -81,6 +88,7 @@ int color_greedy(app_t* app){
         delete_hist(&app->hist);
         new_hist(app);
         current_algorithm = GREEDY;
+        sol_counter = 0;
         // max_color = max > 0 ? max : COLOR_COUNT;
         return greedy(app);
     } else {

@@ -70,6 +70,7 @@ typedef struct physical_graph_t {
 typedef struct history_slice_t {
     int vi;
     int i;
+    int is_solution;
     enum Color from;
     enum Color to;
     history_slice_t* prev;
@@ -80,6 +81,7 @@ typedef struct color_history_t {
     hist_slice_t* head;
     hist_slice_t* tail;
     hist_slice_t* current;
+    int max_sol;
 } hist_t;
 
 typedef struct application_data_t {
@@ -94,12 +96,15 @@ typedef struct application_data_t {
     SDL_Rect iter_rect;
 } app_t;
 
-void add_slice(hist_t* hist, int i, enum Color from, enum Color to);
+void add_slice(hist_t* hist, int i, enum Color from, enum Color to, int sol);
 void color_vertex(app_t* app, int i, enum Color color);
 void delete_hist(hist_t** hist);
 void new_hist(app_t* app);
-void render_next_slice(app_t* app);
-void render_prev_slice(app_t* app);
+int go_next_slice(app_t* app);
+int go_prev_slice(app_t* app);
+void go_next_solution(app_t* app);
+void go_prev_solution(app_t* app);
+void find_max_solution(app_t* app);
 void print_history(app_t* app);
 void set_app_iter_texture(app_t* app, SDL_Renderer* renderer,TTF_Font* font);
 
