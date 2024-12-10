@@ -13,8 +13,17 @@ void printUsage(){
            "./main -load graph.txt\n"
            "\n"
            "-builder: Graphı inşa et.\n"
+           "\n"
            "v - köşe ekle.\n"
-           "e - kenar ekle.\n");
+           "e - kenar ekle.\n"
+           "g - pgraph -> graph.\n"
+           "k - koordinatları kaydet.\n"
+           "s - backtracking solve.\n"
+           "x - greedy solve.\n"
+           "r - köşe yarıçapını arttır.\n"
+           "R - köşe yarıçapını azalt.\n"
+           "a - history geri.\n"
+           "d - history ileri.\n");
     exit(EXIT_SUCCESS);
 }
 // comment line
@@ -110,6 +119,8 @@ void handle_event(SDL_Event* e, app_t* app){
         case SDLK_k:
             if (get_coord_file(file_name)){
                 save_pgraph_coord(app->pgraph, coord_file_name);
+            } else {
+                print_pgraph_coord(app->pgraph, stdout);
             }
             break;  
         case SDLK_l:
@@ -250,6 +261,7 @@ int main(int argc, char *args[]) {
     else if (parse_status(BUILDER_MODE)){
         app.pgraph = make_empty_pgraph(25, 300);
         app.graph = NULL;
+        file_name = NULL;
     }
 
     SDL_Event e;

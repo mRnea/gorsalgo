@@ -274,6 +274,10 @@ graph_t* pgraph_to_graph(pgraph_t* pgraph){
 
 char coord_file_name[200];
 char* get_coord_file(char* file_name){
+    if (!file_name){
+        fprintf(stderr, "file_name = NULL, can't convert to coord\n");
+        return NULL;
+    }
     char* coord_file = &coord_file_name[0];
     while (*file_name != '.'){
         *coord_file++ = *file_name++;
@@ -658,6 +662,7 @@ void load_pgraph_coord(pgraph_t* pg, char* file_name){
 
         i++;
     }
+    fprintf(stdout, "coordinates loaded from file \"%s\"\n", file_name);
     fclose(f);
 }
 

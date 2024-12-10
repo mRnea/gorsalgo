@@ -31,9 +31,20 @@ make
 ./main -builder
 ```
 Çizgeyi programda inşa et.\
+
 v: köşe ekle\
-e: kenar ekle
+e: kenar ekle\
+v: köşe ekle.\
+e: kenar ekle.\
+g: pgraph -> graph.\
+k: koordinatları kaydet.\
+s: backtracking solve.\
+x: greedy solve.\
+r: köşe yarıçapını arttır.\
+R: köşe yarıçapını azalt.\
+a: history geri.\
+d: history ileri.\
 
 ## Todo
-+ [ ] Graph coloring algoritmasını ekle.
++ [+] Graph coloring algoritmasını ekle.
 + [ ] Multigraph renderla (düz çizgi yerine eğri)
