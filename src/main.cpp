@@ -108,7 +108,9 @@ void handle_event(SDL_Event* e, app_t* app){
             }
             break;
         case SDLK_k:
-            save_pgraph_coord(app->pgraph, coord_file);
+            if (get_coord_file(file_name)){
+                save_pgraph_coord(app->pgraph, coord_file_name);
+            }
             break;  
         case SDLK_l:
             load_pgraph_coord(app->pgraph, coord_file);
@@ -230,14 +232,20 @@ int main(int argc, char *args[]) {
     srand(time(NULL));
 
     if (!init()) {
-        printf("Failed to initialize SDL2!\n");
+        fprintf(stderr, "Failed to initialize SDL2!\n");
         close();
         return 1;
     }
     
     if (parse_status(FILE_PROVIDED)){
         app.graph = read_graph(file_name);
+        if (!app.graph){
+            fprintf(stderr, "Could not read graph properly from\"%s\"\n", file_name);
+            close();
+            return 1;
+        }
         app.pgraph = graph_to_pgraph(app.graph, WHITE);
+        autoload_coordinates(&app, file_name);
     }
     else if (parse_status(BUILDER_MODE)){
         app.pgraph = make_empty_pgraph(25, 300);

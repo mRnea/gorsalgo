@@ -31,6 +31,7 @@ extern SDL_Surface *gScreenSurface;
 extern SDL_Renderer* gRenderer;
 
 extern TTF_Font *font;
+extern char coord_file_name[200];
  // Starts up SDL and creates window
 bool init();
 
@@ -111,6 +112,8 @@ size_t select_pgraph(pgraph_t* pg, int x, int y);
 
 pgraph_t* graph_to_pgraph(graph_t* graph, int color);
 graph_t* pgraph_to_graph(pgraph_t* pgraph);
+char* get_coord_file(char* file_name);
+void autoload_coordinates(app_t* app, char* file_name);
 void save_graph(graph_t* graph, char* file_name);
 void load_pgraph_coord(pgraph_t* pg, char* file_name);
 void print_pgraph_coord(pgraph_t* pg, FILE* stream);

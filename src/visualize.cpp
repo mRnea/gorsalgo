@@ -272,6 +272,26 @@ graph_t* pgraph_to_graph(pgraph_t* pgraph){
     return graph;
 }
 
+char coord_file_name[200];
+char* get_coord_file(char* file_name){
+    char* coord_file = &coord_file_name[0];
+    while (*file_name != '.'){
+        *coord_file++ = *file_name++;
+    }
+    char suffix[7] = ".coord";
+    for (int i = 0; i < 7; i++){
+        *coord_file++ = suffix[i];
+    }
+    return coord_file_name;
+}
+
+void autoload_coordinates(app_t* app, char* file_name){
+    char* coord_file = get_coord_file(file_name);
+    if (coord_file){
+        load_pgraph_coord(app->pgraph, coord_file);
+    }
+}
+
 void save_graph(graph_t* graph, char* file_name){
     FILE* f = fopen(file_name, "w");
     if (f){
@@ -652,9 +672,10 @@ void print_pgraph_coord(pgraph_t* pg, FILE* stream){
 void save_pgraph_coord(pgraph_t* pg, char* file_name){
     FILE* f = fopen(file_name, "w");
     if (!f){
-        fprintf(stderr, "file \"%s\" could not be opened", file_name);
+        fprintf(stderr, "file \"%s\" could not be opened\n", file_name);
         return;
     }
     print_pgraph_coord(pg, f);
+    fprintf(stdout, "coordinates are saved to \"%s\"\n", file_name);
     fclose(f);
 }
