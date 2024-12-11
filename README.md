@@ -1,7 +1,11 @@
 # Görsel Algoritma
 Çizge ve ağaç gibi veri yapıları üzerindeki algoritmaları görselleştirme amaçlı yazılım.
-
+Suppots backtracking and greedy algorithms for graph coloring.
 ## Kurulum
+
+### Windows
+
+
 
 ### Linux
 
@@ -21,9 +25,9 @@ make
 
 
 ### builder
-
+Allows user to create custom graphs.
 ```bash
-./main -builder
+./main -b
 ```
 Çizgeyi programda inşa et.
 
