@@ -10,11 +10,6 @@ apt install libsdl2-dev libsdl2-ttf-dev
 make
 ```
 
-### Windows
-
-+ C derleyicisi icin MinGW indirin.
-+ SDL headerlarini indirip build.bat dosyasina uygun yere koyun
-
 ## Kullanım
 
 ### load
